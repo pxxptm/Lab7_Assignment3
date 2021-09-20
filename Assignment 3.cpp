@@ -98,7 +98,7 @@ int main()
             ch=_getch();
             if(ch=='a') { draw_ship(--x,y); }
             if(ch=='s') { draw_ship(++x,y); }
-            if(bullet!=1 && ch==' ') { Beep(700,250); bullet=1; bx=x+3; by=y-1; }
+            if(bullet!=1 && ch==' ') { bullet=1; bx=x+3; by=y-1; }
             fflush(stdin);
             }
 
@@ -110,6 +110,7 @@ int main()
                 {
                     if(cursor(bx,by-1)=='*')
                     {
+                        Beep(700,250);
                         p++;
                         sx=abs(rand())%71;
                         sy=abs(rand())%6;
