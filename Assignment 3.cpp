@@ -1,4 +1,4 @@
-#include<stdio.h>
+#include<vector>
 #include<windows.h>
 #include<time.h>
 #include<conio.h>
@@ -8,6 +8,7 @@ using namespace std;
 
 
 int p=0;
+vector <int> bullx,bully;
 
 void setcursor(bool visible)
 {
@@ -69,14 +70,28 @@ char cursor(int x, int y)
 
 }
 
+void erase_ship(int x,int y)
+{
+    COORD c={x,y};
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE),c);
+    cout << "          ";
+    setcursor(0);
+}
+
+
 int main()
 {
     char ch='.';
     int x=38,y=20;
-    int bx,by,i,sx,sy;
+    int i,sx,sy;
     int bullet = 0;
+    int dir=0;
+    int c=-1; // count bullets
+    int ca=1,cd=1; // direction status
+
     setcursor(0);
     draw_ship(x,y);
+    srand(time(NULL));
 
     //window  w : 70
 
@@ -89,39 +104,74 @@ int main()
         draw_star(sx,sy);
     }
 
+    showscore();
+
     do
     {
-        showscore();
-
-        if (_kbhit())
+        if (_kbhit()) // direction
         {
             ch=_getch();
-            if(ch=='a') { draw_ship(--x,y); }
-            if(ch=='s') { draw_ship(++x,y); }
-            if(bullet!=1 && ch==' ') { bullet=1; bx=x+3; by=y-1; }
-            fflush(stdin);
-            }
-
-            if (bullet==1)
+            if(ch=='a') { dir=-1; cd=1; }
+            else if(ch=='d') { dir=1; ca=1; }
+            else if(ch=='s') { dir=0; }
+            else if(ch==' ')
             {
-                clear_bullet(bx,by);
-                if (by==2) { bullet=0;}
-                else
+                if(c<4)
                 {
-                    if(cursor(bx,by-1)=='*')
-                    {
-                        Beep(700,250);
-                        p++;
-                        sx=abs(rand())%71;
-                        sy=abs(rand())%6;
-                        if(sy<2) sy+=2;
-                        if(sx<10) sx+=10;
-                        draw_star(sx,sy);
-                    }
-                    draw_bullet(bx,--by);
+                    bullx.push_back(x+3);
+                    bully.push_back(y-1);
+                    draw_bullet(bullx[i],bully[i]);
+                    c++;
                 }
             }
-            Sleep(100);
+            fflush(stdin);
+        }
+        else
+        {
+            while(!_kbhit()||!(x>=0&&x<=76)) // move
+            {
+                if(ch!='s') erase_ship(x,y);
+                if(x>=0&&x<=76)
+                {
+                    if(cd==0||ca==0) dir=0;
+                    x+=dir;
+                    draw_ship(x,y);
+                    Sleep(100);
+
+                    for(i=0;i<=c;i++)
+                    {
+                        clear_bullet(bullx[i],bully[i]);
+                        bully[i]--;
+                        if(bully[i]<2)
+                        {
+                            clear_bullet(bullx[i],bully[i]);
+                            bullx.erase(bullx.begin()+i);
+                            bully.erase(bully.begin()+i);
+                            c--;
+                        }
+                        else
+                        {
+                            if(cursor(bullx[i],bully[i]-1)=='*')
+                            {
+                                Beep(1000,100);
+                                p++;
+                                showscore();
+
+                                sx=abs(rand())%71;
+                                sy=abs(rand())%6;
+                                if(sy<2) sy+=2;
+                                if(sx<10) sx+=10;
+                                draw_star(sx,sy);
+                            }
+                            else  draw_bullet(bullx[i],bully[i]);
+                        }
+                    }
+                }
+
+                    if(x==5) { ca=0; break; }
+                    else if(x==67) { cd=0; break; }
+                }
+            }
     } while (ch!='x');
     return 0;
 }
